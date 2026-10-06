@@ -6,90 +6,87 @@
     <title>Telegram Bot Serverless</title>
     <style>
         body { font-family: sans-serif; text-align: center; padding-top: 50px; background: #121212; color: white; }
-        .log-box { background: #222; border: 1px solid #444; padding: 15px; width: 85%; margin: 20px auto; text-align: left; font-family: monospace; font-size: 11px; color: #0f0; max-height: 300px; overflow-y: auto; }
+        .status { color: #00ff00; font-weight: bold; }
+        .log-box { background: #222; border: 1px solid #444; padding: 15px; width: 85%; margin: 20px auto; text-align: left; font-family: monospace; font-size: 12px; color: #00ff00; max-height: 250px; overflow-y: auto; }
     </style>
 </head>
 <body>
-    <h1>🤖 Bot Daniel (Mode Kunci AQ)</h1>
-    <p>Status: <span style="color:#0f0">ONLINE</span></p>
-    <div class="log-box" id="logBox">Menunggu chat...</div>
+    <h1>🤖 Bot Telegram Daniel Aktif!</h1>
+    <p>Status Server: <span class="status">ONLINE & RUNNING</span></p>
+    <p>⚠️ PENTING: Jangan tutup tab ini di HP agar bot terus merespon.</p>
+    
+    <div class="log-box" id="logBox">Sistem dimulai... Menunggu chat.</div>
 
     <script type="module">
         const TELEGRAM_TOKEN = "8752862880:AAH0V_66etnuSVZ6nbuE2iDdsU6V-V-Hb1E";
-        
-        // PASTE KUNCI YANG AWALANNYA "AQ." DI SINI
-        const GEMINI_API_KEY = "AQ.Ab8RN6IkeSnHHWef0SQXfP-2LJAyLMXr2vOF3hPhBLlKWaKRyw"; // Ganti dengan kunci AQ lengkap Abang
+        // 🔑 Kunci asli abang sudah tertanam sempurna di bawah ini
+        const GEMINI_API_KEY = "AQ.Ab8RN6IkeSnHHWef0SQXfP-2LJAyLMXr2vOF3hPhBLlKWaKRyw"; 
 
         let lastUpdateId = 0;
         const logBox = document.getElementById("logBox");
 
-        function log(msg) {
-            logBox.innerHTML += `<div>> ${msg}</div>`;
+        function cetakLog(teks) {
+            logBox.innerHTML += "<div>> " + teks + "</div>";
             logBox.scrollTop = logBox.scrollHeight;
         }
 
-        async function startBot() {
+        async function periksaPesan() {
             try {
-                // Cek pesan Telegram
-                const tgRes = await fetch(`https://telegram.org{TELEGRAM_TOKEN}/getUpdates?offset=${lastUpdateId + 1}&timeout=5`);
-                const tgData = await tgRes.json();
+                const res = await fetch(`https://telegram.org{TELEGRAM_TOKEN}/getUpdates?offset=${lastUpdateId + 1}&timeout=5`);
+                const data = await res.json();
 
-                if (tgData.ok && tgData.result.length > 0) {
-                    for (const update of tgData.result) {
+                if (data.ok && data.result.length > 0) {
+                    for (const update of data.result) {
                         lastUpdateId = update.update_id;
+                        
                         if (update.message && update.message.text) {
                             const chatId = update.message.chat.id;
-                            const text = update.message.text;
-                            log(`Chat masuk: ${text}`);
+                            const pesanUser = update.message.text;
+                            cetakLog(`Menerima chat: "${pesanUser}"`);
 
-                            // Efek ngetik
+                            // Efek mengetik di Telegram
                             fetch(`https://telegram.org{TELEGRAM_TOKEN}/sendChatAction?chat_id=${chatId}&action=typing`);
 
-                            // --- BAGIAN INI DIUBAH KHUSUS UNTUK KUNCI AQ ---
-                            // Kita pakai URL endpoint versi 'v1' bukan 'v1beta' agar lebih stabil dengan kunci AQ
-                            const url = `https://googleapis.com{GEMINI_API_KEY}`;
-                            
-                            const geminiRes = await fetch(url, {
+                            // Memanggil Gemini AI model 2.5 Flash yang mendukung Kunci AQ
+                            cetakLog("Memanggil Gemini AI (Model 2.5-Flash)...");
+                            const geminiRes = await fetch(`https://googleapis.com{GEMINI_API_KEY}`, {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ contents: [{ parts: [{ text: text }] }] })
+                                body: JSON.stringify({
+                                    contents: [{ parts: [{ text: pesanUser }] }]
+                                })
                             });
-
+                            
                             const geminiData = await geminiRes.json();
                             
                             if (geminiData.error) {
-                                log(`ERROR GEMINI: ${geminiData.error.message}`);
-                                // Kirim pesan error ke Telegram biar Abang tau
-                                fetch(`https://telegram.org{TELEGRAM_TOKEN}/sendMessage`, {
-                                    method: "POST", 
-                                    headers: {"Content-Type": "application/json"},
-                                    body: JSON.stringify({chat_id: chatId, text: `⚠️ Error Kunci: ${geminiData.error.message}`})
-                                });
+                                cetakLog(`ERROR GOOGLE: ${geminiData.error.message}`);
                                 continue;
                             }
 
-                            let reply = "Maaf, AI tidak menjawab.";
-                            if (geminiData.candidates?.[0]?.content?.parts?.[0]?.text) {
-                                reply = geminiData.candidates[0].content.parts[0].text;
+                            let jawabanAI = "Maaf, otak bot sedang blank.";
+                            if (geminiData.candidates && geminiData.candidates[0] && geminiData.candidates[0].content && geminiData.candidates[0].content.parts && geminiData.candidates[0].content.parts[0]) {
+                                jawabanAI = geminiData.candidates[0].content.parts[0].text;
                             }
 
-                            // Kirim Balasan
+                            // Kirim balik ke Telegram
+                            cetakLog("Mengirim balasan ke Telegram...");
                             await fetch(`https://telegram.org{TELEGRAM_TOKEN}/sendMessage`, {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ chat_id: chatId, text: reply })
+                                body: JSON.stringify({ chat_id: chatId, text: jawabanAI })
                             });
-                            log("Balasan terkirim!");
+                            cetakLog("Sukses membalas chat!");
                         }
                     }
                 }
-            } catch (e) {
-                console.error(e);
+            } catch (err) {
+                cetakLog(`Kendala sistem: ${err.message}`);
             }
-            setTimeout(startBot, 2000);
+            setTimeout(periksaPesan, 2000);
         }
 
-        startBot();
+        periksaPesan();
     </script>
 </body>
 </html>
