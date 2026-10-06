@@ -12,7 +12,7 @@
 <body>
     <h1>🤖 Bot Telegram Daniel Aktif!</h1>
     <p>Status Server: <span class="status">ONLINE & RUNNING</span></p>
-    <p>⚠️ PENTING: Biarkan tab website GitHub Pages nanti tetap terbuka di browser HP agar bot merespon.</p>
+    <p>⚠️ PENTING: Biarkan tab website ini tetap terbuka di browser HP agar bot merespon.</p>
 
     <script type="module">
         const TELEGRAM_TOKEN = "8752862880:AAH0V_66etnuSVZ6nbuE2iDdsU6V-V-Hb1E";
@@ -45,6 +45,7 @@
                             
                             const geminiData = await geminiRes.json();
                             
+                            // FIX: Cara membaca teks dari respon Gemini yang benar dan anti-crash
                             let jawabanAI = "Maaf ya, otak bot lagi nge-blank sebentar. Coba tanya lagi! 🙏";
                             if (geminiData.candidates && geminiData.candidates[0] && geminiData.candidates[0].content && geminiData.candidates[0].content.parts && geminiData.candidates[0].content.parts[0]) {
                                 jawabanAI = geminiData.candidates[0].content.parts[0].text;
